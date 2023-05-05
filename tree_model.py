@@ -1,5 +1,5 @@
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore
 
 from tree_item import TreeItem
 
@@ -28,7 +28,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         if not index.isValid():
             return QtCore.QVariant()
 
-        if role == QtCore.Qt.DisplayRole:
+        if role in [QtCore.Qt.DisplayRole, QtCore.Qt.EditRole]:
             item = self._get_item(index)
             return item.data(index.column())
 
@@ -90,7 +90,7 @@ class TreeModel(QtCore.QAbstractItemModel):
                 self.dataChanged.emit(index, index, [QtCore.Qt.DisplayRole, QtCore.Qt.EditRole])
             return result
 
-        return False  # todo: verify
+        return False
 
     def setHeaderData(self, section: int, orientation: QtCore.Qt.Orientation, value: QtCore.QVariant, role: int = ...) -> bool:
         if role == QtCore.Qt.EditRole:
@@ -101,7 +101,7 @@ class TreeModel(QtCore.QAbstractItemModel):
                     self.headerDataChanged.emit(orientation, section, section)
                 return result
 
-        return False  # todo: verify
+        return False
 
     def insertRows(self, position: int, rows: int, parent: QtCore.QModelIndex = ...) -> bool:
         parent_item = self._get_item(parent)
@@ -158,7 +158,7 @@ class TreeModel(QtCore.QAbstractItemModel):
 
             if line_data:
                 # Read the column data from the rest of the line.
-                column_data = [string for string in line_data.split('\t') if string != '']
+                column_data = [QtCore.QVariant(string) for string in line_data.split('\t') if string != '']
 
                 if position > indentations[-1]:
                     # The last child of the current parent is now the new parent

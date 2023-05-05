@@ -3,6 +3,7 @@ import sys
 
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 
+from tree_delegate import TreeDelegate
 from tree_model import TreeModel
 
 BUNDLE = True
@@ -31,6 +32,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         data = QtCore.QTextStream(file).readAll()
         model = TreeModel(headers, data, self)
         file.close()
+
+        self.view.setItemDelegate(TreeDelegate())
 
         self.view.setModel(model)
         for column in range(model.columnCount()):
