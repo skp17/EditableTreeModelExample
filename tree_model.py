@@ -24,6 +24,18 @@ class TreeModel(QtCore.QAbstractItemModel):
                 return item
         return self._rootItem
 
+    def iterate(self, index: QtCore.QModelIndex):
+        if index.isValid():
+            item = self._get_item(index)
+            row_data = []
+            for column in range(item.column_count()):
+                row_data.append(item.data(column))
+            print(row_data)
+
+            if self.hasChildren(index):
+                for row in range(self.rowCount(index)):
+                    self.iterate(self.index(row, 0, index))
+
     def data(self, index: QtCore.QModelIndex, role: int = ...) -> QtCore.QVariant:
         if not index.isValid():
             return QtCore.QVariant()
@@ -140,11 +152,8 @@ class TreeModel(QtCore.QAbstractItemModel):
         return success
 
     def _setup_model_data(self, lines: [], parent: TreeItem):
-        parents = []
-        indentations = []
-        parents.append(parent)
-        indentations.append(0)
-
+        parents = [parent]
+        indentations = [0]
         number = 0
 
         while number < len(lines):
@@ -159,11 +168,11 @@ class TreeModel(QtCore.QAbstractItemModel):
             if line_data:
                 # Read the column data from the rest of the line.
                 column_data = [QtCore.QVariant(string) for string in line_data.split('\t') if string != '']
+                # column_data = [string for string in line_data.split('\t') if string != '']
 
                 if position > indentations[-1]:
                     # The last child of the current parent is now the new parent
                     # unless the current parent has no children.
-                    parents[-1]: TreeItem
                     if parents[-1].child_count() > 0:
                         parents.append(
                             parents[-1].child(parents[-1].child_count() - 1)
@@ -175,7 +184,7 @@ class TreeModel(QtCore.QAbstractItemModel):
                         indentations.pop()
 
                 # Append a new item to the current parent's list of children.
-                last_parent: TreeItem = parents[-1]
+                last_parent = parents[-1]
                 last_parent.insert_children(last_parent.child_count(), 1, self._rootItem.column_count())
                 for column in range(len(column_data)):
                     last_parent.child(last_parent.child_count() - 1).set_data(column, column_data[column])
