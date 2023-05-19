@@ -24,17 +24,26 @@ class TreeModel(QtCore.QAbstractItemModel):
                 return item
         return self._rootItem
 
-    def iterate(self, index: QtCore.QModelIndex):
-        if index.isValid():
-            item = self._get_item(index)
-            row_data = []
-            for column in range(item.column_count()):
-                row_data.append(item.data(column))
-            print(row_data)
+    def iterate(self, index: QtCore.QModelIndex, data: list, indentation: str = '') -> list:
+        item = self._get_item(index)
 
-            if self.hasChildren(index):
-                for row in range(self.rowCount(index)):
-                    self.iterate(self.index(row, 0, index))
+        if item != self._rootItem:
+            row_data = ''
+            for column in range(self._rootItem.column_count()):
+                row_data += item.data(column).value() + '\t\t\t'
+            data.append(indentation + row_data.rstrip() + '\n')
+
+        if self.hasChildren(index):
+            if item != self._rootItem:
+                indentation += '    '
+
+            for row in range(self.rowCount(index)):
+                self.iterate(self.index(row, 0, index), data, indentation)
+
+        if item.parent_item() == self._rootItem:
+            data.append('\n')
+
+        return data
 
     def data(self, index: QtCore.QModelIndex, role: int = ...) -> QtCore.QVariant:
         if not index.isValid():
